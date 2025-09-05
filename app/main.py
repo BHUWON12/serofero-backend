@@ -54,12 +54,20 @@ app.add_middleware(
 
 # Static files for media uploads
 media_path = Path("media")
-media_path.mkdir(exist_ok=True)
+try:
+    media_path.mkdir(exist_ok=True)
+except OSError:
+    # Handle read-only file system in deployment
+    pass
 app.mount("/media", StaticFiles(directory="media"), name="media")
 
 # Create a temporary directory for uploads that will be processed in the background
 temp_media_path = Path("temp_media")
-temp_media_path.mkdir(exist_ok=True)
+try:
+    temp_media_path.mkdir(exist_ok=True)
+except OSError:
+    # Handle read-only file system in deployment
+    pass
 
 
 # Routers

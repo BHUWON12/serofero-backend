@@ -17,7 +17,11 @@ from ..utils.encryption import encrypt_message_content, decrypt_message_content
 router = APIRouter()
 
 TEMP_MEDIA_DIR = Path("temp_media")
-TEMP_MEDIA_DIR.mkdir(exist_ok=True)
+try:
+    TEMP_MEDIA_DIR.mkdir(exist_ok=True)
+except OSError:
+    # Handle read-only file system in deployment
+    pass
 
 async def upload_and_finalize_message(message_id: int, temp_file_path: str, original_filename: str):
     """
