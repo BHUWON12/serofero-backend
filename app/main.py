@@ -8,10 +8,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from .db import engine
-from . import models
-from .routes import auth, posts, connections, feed, messages, realtime, block
-from .security import get_current_user
+# Import modules using absolute imports
+import models
+from db import engine, get_db
+from routes import auth, posts, connections, feed, messages, realtime, block
+from security import get_current_user
 
 # Create tables
 models.Base.metadata.create_all(bind=engine)
@@ -30,15 +31,13 @@ ENV = os.getenv("ENVIRONMENT", "development")
 
 # CORS middleware
 if ENV == "development":
-    # Open everything in development
     origins = ["*"]
-    allow_credentials = True  # ⚠️ If you use cookies, better to set explicit origins
+    allow_credentials = True
 else:
-    # Strict origins in production
     default_origins = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "http://10.181.246.74:5173",  # Your machine's LAN IP for frontend
+        "http://10.181.246.74:5173",
     ]
     origins_str = os.getenv("CORS_ORIGINS", ",".join(default_origins))
     origins = [origin.strip() for origin in origins_str.split(",")]
@@ -54,21 +53,12 @@ app.add_middleware(
 
 # Static files for media uploads
 media_path = Path("media")
-try:
-    media_path.mkdir(exist_ok=True)
-except OSError:
-    # Handle read-only file system in deployment
-    pass
+media_path.mkdir(exist_ok=True)
 app.mount("/media", StaticFiles(directory="media"), name="media")
 
-# Create a temporary directory for uploads that will be processed in the background
+# Temporary uploads
 temp_media_path = Path("temp_media")
-try:
-    temp_media_path.mkdir(exist_ok=True)
-except OSError:
-    # Handle read-only file system in deployment
-    pass
-
+temp_media_path.mkdir(exist_ok=True)
 
 # Routers
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
@@ -79,6 +69,7 @@ app.include_router(messages.router, prefix="/messages", tags=["Messages"])
 app.include_router(block.router, prefix="/block", tags=["Block & Report"])
 app.include_router(realtime.router)
 
+# Basic routes
 @app.get("/")
 async def root():
     return {"message": "serofero API - Secure Social Platform"}
@@ -100,6 +91,7 @@ async def get_profile(current_user: models.User = Depends(get_current_user)):
         "created_at": current_user.created_at
     }
 
+# Run app
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
