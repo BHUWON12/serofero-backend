@@ -9,3 +9,5 @@ cloudinary==1.39.1
 cryptography==42.0.4
 python-dotenv==1.0.1
 anyio==4.9.0
+psycopg2-binary
+python-multipart
