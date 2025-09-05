@@ -57,7 +57,6 @@ async def upload_file_to_cloudinary(
             secure_url = f"{parts[0]}/upload/fl_attachment:{encoded_filename}/{parts[1]}"
 
     return secure_url, media_type
-
 async def validate_and_save_file(file: UploadFile) -> Tuple[str, str]:
     """
     Validates an uploaded file by reading it, saves it to Cloudinary,
