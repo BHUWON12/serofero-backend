@@ -11,3 +11,4 @@ python-dotenv==1.0.1
 anyio==4.9.0
 psycopg2-binary
 python-multipart
+psycopg2
