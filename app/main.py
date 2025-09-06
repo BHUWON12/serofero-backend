@@ -33,7 +33,6 @@ ENV = "development"  # Force development for CORS
 
 # CORS settings
 if ENV == "development":
-    # In development, allow your frontend dev server(s)
     origins = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
@@ -41,25 +40,21 @@ if ENV == "development":
         "http://127.0.0.1:3000"
     ]
 else:
-    # Production origins from environment variable or default
-    default_origins = [
-        "https://your-production-frontend.com"
-    ]
+    default_origins = ["https://your-production-frontend.com"]
     origins_str = os.getenv("CORS_ORIGINS", ",".join(default_origins))
     origins = [origin.strip() for origin in origins_str.split(",")]
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,        # explicitly allow your frontend
-    allow_credentials=True,       # required if you use cookies/auth headers
-    allow_methods=["*"],          # allow POST/GET/OPTIONS etc.
-    allow_headers=["*"],          # allow headers like Authorization
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Static files — skip folder creation, just mount if needed
-# If the folder doesn't exist, FastAPI will throw an error only when accessed.
-# You can comment this out if unused
+# Uncomment if you actually serve media files
 # app.mount("/media", StaticFiles(directory="media"), name="media")
 
 # Routers
