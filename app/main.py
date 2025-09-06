@@ -31,6 +31,9 @@ security = HTTPBearer()
 # Detect environment
 ENV = "development"  # Force development for CORS
 
+# Detect environment
+ENV = "production"  # production mode
+
 # CORS settings
 if ENV == "development":
     origins = [
@@ -40,10 +43,11 @@ if ENV == "development":
         "http://127.0.0.1:3000"
     ]
 else:
-    default_origins = ["https://your-production-frontend.com"]
-    origins_str = os.getenv("CORS_ORIGINS", ",".join(default_origins))
-    origins = [origin.strip() for origin in origins_str.split(",")]
+    # Read allowed origins from .env, e.g., CORS_ORIGINS=https://serofero-frontend.com
+    origins_str = os.getenv("CORS_ORIGINS", "")
+    origins = [origin.strip() for origin in origins_str.split(",") if origin.strip()]
 
+    
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
