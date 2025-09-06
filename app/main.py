@@ -29,27 +29,29 @@ app = FastAPI(
 security = HTTPBearer()
 
 # Detect environment
-ENV = "development"  # Force development for CORS
-
-# Detect environment
-ENV = "production"  # production mode
-
-# Detect environment
 ENV = os.getenv("ENV", "development")  # read from .env, default to dev
 
+# Define a base set of allowed origins for development and production Vercel deployments
+base_origins = [
+    "https://serofero-frontend.vercel.app",
+    "https://serofero.vercel.app",
+]
+
+# For development, add localhost origins
 if ENV == "development":
-    origins = [
+    base_origins.extend([
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "https://serofero-frontend.vercel.app",
-        "https://serofero.vercel.app"
-    ]
-else:
-    # Read allowed origins from .env
-    origins_str = os.getenv("CORS_ORIGINS", "")
-    origins = [origin.strip() for origin in origins_str.split(",") if origin.strip()]
+    ])
+
+# Read additional origins from the .env file and combine with the base list
+additional_origins_str = os.getenv("CORS_ORIGINS", "")
+additional_origins = [origin.strip() for origin in additional_origins_str.split(",") if origin.strip()]
+
+# Combine all origins, ensuring no duplicates
+origins = list(set(base_origins + additional_origins))
 
 # Add CORS middleware
 app.add_middleware(
