@@ -34,20 +34,23 @@ ENV = "development"  # Force development for CORS
 # Detect environment
 ENV = "production"  # production mode
 
-# CORS settings
+# Detect environment
+ENV = os.getenv("ENV", "development")  # read from .env, default to dev
+
 if ENV == "development":
     origins = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000",
-        "http://127.0.0.1:3000"
+        "http://127.0.0.1:3000",
+        "https://serofero-frontend.vercel.app",
+        "https://serofero.vercel.app"
     ]
 else:
-    # Read allowed origins from .env, e.g., CORS_ORIGINS=https://serofero-frontend.com
+    # Read allowed origins from .env
     origins_str = os.getenv("CORS_ORIGINS", "")
     origins = [origin.strip() for origin in origins_str.split(",") if origin.strip()]
 
-    
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -56,6 +59,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Static files — skip folder creation, just mount if needed
 # Uncomment if you actually serve media files
