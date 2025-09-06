@@ -1,22 +1,24 @@
-from fastapi import FastAPI, Depends, BackgroundTasks
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer
-import os
 from pathlib import Path
+import os
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
 
-# Import modules using absolute imports
-import models
-from db import engine, get_db
-from routes import auth, posts, connections, feed, messages, realtime, block
-from security import get_current_user
+# Absolute imports
+from . import models
+from .db import engine, get_db
+from .routes import auth, posts, connections, feed, messages, realtime, block
+from .security import get_current_user
 
-# Create tables
+# Create database tables
 models.Base.metadata.create_all(bind=engine)
 
+# Initialize FastAPI app
 app = FastAPI(
     title="serofero API",
     description="A secure social platform with messaging and calls",
@@ -27,28 +29,34 @@ app = FastAPI(
 security = HTTPBearer()
 
 # Detect environment
-ENV = os.getenv("ENVIRONMENT", "development")
+ENV = "development"  # Force development for CORS
 
-# CORS middleware
+# CORS settings
 if ENV == "development":
-    origins = ["*"]
-    allow_credentials = True
-else:
-    default_origins = [
+    # In development, allow your frontend dev server(s)
+    origins = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "http://10.181.246.74:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
+    ]
+    allow_credentials = True
+else:
+    # Production origins from environment variable or default
+    default_origins = [
+        "https://your-production-frontend.com"
     ]
     origins_str = os.getenv("CORS_ORIGINS", ",".join(default_origins))
     origins = [origin.strip() for origin in origins_str.split(",")]
     allow_credentials = True
 
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=allow_credentials,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=origins,        # explicitly allow your frontend
+    allow_credentials=True,       # required if you use cookies/auth headers
+    allow_methods=["*"],          # allow POST/GET/OPTIONS etc.
+    allow_headers=["*"],          # allow headers like Authorization
 )
 
 # Static files for media uploads
@@ -91,7 +99,7 @@ async def get_profile(current_user: models.User = Depends(get_current_user)):
         "created_at": current_user.created_at
     }
 
-# Run app
+# Run app directly (for dev only)
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
