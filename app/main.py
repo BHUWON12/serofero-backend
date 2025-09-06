@@ -40,7 +40,6 @@ if ENV == "development":
         "http://localhost:3000",
         "http://127.0.0.1:3000"
     ]
-    allow_credentials = True
 else:
     # Production origins from environment variable or default
     default_origins = [
@@ -48,7 +47,6 @@ else:
     ]
     origins_str = os.getenv("CORS_ORIGINS", ",".join(default_origins))
     origins = [origin.strip() for origin in origins_str.split(",")]
-    allow_credentials = True
 
 # Add CORS middleware
 app.add_middleware(
@@ -59,14 +57,10 @@ app.add_middleware(
     allow_headers=["*"],          # allow headers like Authorization
 )
 
-# Static files for media uploads
-media_path = Path("media")
-media_path.mkdir(exist_ok=True)
-app.mount("/media", StaticFiles(directory="media"), name="media")
-
-# Temporary uploads
-temp_media_path = Path("temp_media")
-temp_media_path.mkdir(exist_ok=True)
+# Static files — skip folder creation, just mount if needed
+# If the folder doesn't exist, FastAPI will throw an error only when accessed.
+# You can comment this out if unused
+# app.mount("/media", StaticFiles(directory="media"), name="media")
 
 # Routers
 app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
